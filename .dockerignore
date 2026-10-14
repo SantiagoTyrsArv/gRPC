@@ -1,0 +1,17 @@
+# El contexto de build es la raíz del monorepo; solo se envía lo necesario.
+**/node_modules
+**/dist
+**/coverage
+**/.env
+**/.env.*
+!**/.env.example
+.git
+.github
+.husky
+.playwright-mcp
+.vercel
+docs
+apps/web
+apps/bot
+packages/proto-gen/src/gen
+**/*.log

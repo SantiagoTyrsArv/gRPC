@@ -4,5 +4,11 @@
   "installCommand": "pnpm install --frozen-lockfile",
   "buildCommand": "pnpm build",
   "outputDirectory": "dist",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ../../packages ../../proto ../../buf.gen.yaml ../../pnpm-lock.yaml ../../package.json ../../pnpm-workspace.yaml"
 }

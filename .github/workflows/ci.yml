@@ -27,6 +27,8 @@ jobs:
     env:
       # Base desechable para los tests de integración con Postgres
       TEST_DATABASE_URL: postgres://typerace:typerace@localhost:5432/typerace
+      # El build del frontend exige una URL de backend (no se usa en CI)
+      VITE_API_URL: http://localhost:8080
     steps:
       - uses: actions/checkout@v4
         with:
@@ -66,3 +68,21 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+  docker:
+    name: Imagen Docker del servidor
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Construir imagen (contexto = raíz del monorepo)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/server/Dockerfile
+          push: false
+          tags: typerace-server:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
