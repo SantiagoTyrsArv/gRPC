@@ -1,0 +1,29 @@
+# Dependencias
+node_modules/
+
+# Builds
+dist/
+build/
+*.tsbuildinfo
+coverage/
+
+# Código generado por buf (se regenera con `pnpm generate`)
+packages/proto-gen/src/gen/
+
+# Entorno
+.env
+.env.*
+!.env.example
+
+# Logs y SO
+*.log
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Vercel
+.vercel

@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package typerace.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// Ranking global de resultados persistidos.
+service LeaderboardService {
+  rpc GetLeaderboard(GetLeaderboardRequest) returns (GetLeaderboardResponse);
+}
+
+message GetLeaderboardRequest {
+  // Máximo de entradas (1-50). 0 usa el valor por defecto (20).
+  uint32 limit = 1;
+}
+
+message LeaderboardEntry {
+  uint32 rank = 1;
+  string nickname = 2;
+  double wpm = 3;
+  double accuracy = 4;
+  google.protobuf.Timestamp achieved_at = 5;
+}
+
+message GetLeaderboardResponse {
+  repeated LeaderboardEntry entries = 1;
+}

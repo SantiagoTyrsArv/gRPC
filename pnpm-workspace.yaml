@@ -1,0 +1,8 @@
+packages:
+  - apps/*
+  - packages/*
+
+# pnpm bloquea scripts de instalación por defecto; se habilitan solo los necesarios
+allowBuilds:
+  '@bufbuild/buf': true
+  esbuild: true

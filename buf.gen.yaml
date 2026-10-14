@@ -1,0 +1,11 @@
+# Genera código TypeScript (Protobuf-ES v2) en el paquete compartido
+version: v2
+inputs:
+  - directory: proto
+plugins:
+  - local: protoc-gen-es
+    out: packages/proto-gen/src/gen
+    opt:
+      - target=ts
+      - import_extension=js
+clean: true

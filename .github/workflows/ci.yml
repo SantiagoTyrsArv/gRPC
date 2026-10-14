@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Lint, typecheck, test y build
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: typerace
+          POSTGRES_PASSWORD: typerace
+          POSTGRES_DB: typerace
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U typerace"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      DATABASE_URL: postgres://typerace:typerace@localhost:5432/typerace
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Buf lint
+        run: pnpm buf:lint
+
+      - name: Buf breaking (solo PRs)
+        if: github.event_name == 'pull_request'
+        run: pnpm exec buf breaking --against ".git#branch=origin/${{ github.base_ref }}"
+
+      - name: Generar código desde proto
+        run: pnpm generate
+
+      - name: Formato
+        run: pnpm format:check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Tests
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build

@@ -1,0 +1,142 @@
+syntax = "proto3";
+
+package typerace.v1;
+
+import "google/protobuf/timestamp.proto";
+import "typerace/v1/common.proto";
+
+// Gestión de salas. Las RPC que actúan sobre una sala existente requieren el
+// header `x-player-token`, validado por un interceptor del servidor.
+service RoomService {
+  // Crea una sala; quien la crea es el anfitrión.
+  rpc CreateRoom(CreateRoomRequest) returns (CreateRoomResponse);
+  // Se une a una sala existente con su código.
+  rpc JoinRoom(JoinRoomRequest) returns (JoinRoomResponse);
+  // Recupera la sesión tras recargar la página (requiere token).
+  rpc Reconnect(ReconnectRequest) returns (ReconnectResponse);
+  // Marca/desmarca al jugador como listo (requiere token).
+  rpc SetReady(SetReadyRequest) returns (SetReadyResponse);
+  // Abandona la sala (requiere token).
+  rpc LeaveRoom(LeaveRoomRequest) returns (LeaveRoomResponse);
+  // Streaming del servidor con todos los eventos de la sala (requiere token).
+  rpc WatchRoom(WatchRoomRequest) returns (stream WatchRoomResponse);
+}
+
+// Credenciales de sesión que el cliente guarda para las siguientes llamadas.
+message PlayerSession {
+  string room_code = 1;
+  string player_id = 2;
+  // Secreto opaco; se envía en el header `x-player-token`.
+  string player_token = 3;
+}
+
+message CreateRoomRequest {
+  string nickname = 1;
+}
+
+message CreateRoomResponse {
+  PlayerSession session = 1;
+}
+
+message JoinRoomRequest {
+  string nickname = 1;
+  string room_code = 2;
+}
+
+message JoinRoomResponse {
+  PlayerSession session = 1;
+}
+
+message ReconnectRequest {}
+
+message ReconnectResponse {
+  PlayerSession session = 1;
+  string nickname = 2;
+}
+
+message SetReadyRequest {
+  bool ready = 1;
+}
+
+message SetReadyResponse {}
+
+message LeaveRoomRequest {}
+
+message LeaveRoomResponse {}
+
+message WatchRoomRequest {}
+
+// Cada mensaje del stream contiene exactamente un evento.
+message WatchRoomResponse {
+  // Hora del servidor al emitir el evento; permite al cliente corregir el
+  // desfase de su reloj para sincronizar la cuenta regresiva.
+  google.protobuf.Timestamp server_time = 1;
+
+  oneof event {
+    RoomSnapshot snapshot = 2;
+    PlayerJoined player_joined = 3;
+    PlayerLeft player_left = 4;
+    PlayerReadyChanged player_ready_changed = 5;
+    CountdownStarted countdown_started = 6;
+    RaceStarted race_started = 7;
+    ProgressUpdated progress_updated = 8;
+    PlayerFinished player_finished = 9;
+    RaceFinished race_finished = 10;
+    Heartbeat heartbeat = 11;
+    HostChanged host_changed = 12;
+    PlayerConnectionChanged player_connection_changed = 13;
+  }
+}
+
+// Estado completo; se envía al suscribirse (y al reconectar).
+message RoomSnapshot {
+  RoomState state = 1;
+}
+
+message PlayerJoined {
+  Player player = 1;
+}
+
+message PlayerLeft {
+  string player_id = 1;
+}
+
+message PlayerReadyChanged {
+  string player_id = 1;
+  bool ready = 2;
+}
+
+// Se emite al iniciar la carrera: incluye el texto para que se muestre
+// durante la cuenta regresiva.
+message CountdownStarted {
+  RaceInfo race = 1;
+}
+
+message RaceStarted {
+  string race_id = 1;
+}
+
+message ProgressUpdated {
+  PlayerProgress progress = 1;
+}
+
+message PlayerFinished {
+  PlayerResult result = 1;
+}
+
+message RaceFinished {
+  string race_id = 1;
+  repeated PlayerResult results = 2;
+}
+
+// Mantiene viva la conexión a través de proxies (Railway) cada ~15 s.
+message Heartbeat {}
+
+message HostChanged {
+  string new_host_player_id = 1;
+}
+
+message PlayerConnectionChanged {
+  string player_id = 1;
+  bool connected = 2;
+}

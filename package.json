@@ -1,0 +1,45 @@
+{
+  "name": "typerace-grpc",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Carrera de tipeo multijugador en tiempo real sobre gRPC (Connect RPC)",
+  "type": "module",
+  "packageManager": "pnpm@11.22.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "generate": "pnpm --filter @typerace/proto-gen generate",
+    "buf:lint": "buf lint",
+    "buf:format": "buf format -w",
+    "buf:breaking": "buf breaking --against '.git#branch=main'",
+    "dev": "pnpm --parallel --filter @typerace/server --filter @typerace/web dev",
+    "build": "pnpm -r build",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@bufbuild/buf": "^1.73.0",
+    "@commitlint/cli": "^21.2.3",
+    "@commitlint/config-conventional": "^21.2.3",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.19.2",
+    "eslint": "^10.12.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.7",
+    "globals": "^17.13.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
+    "prettier": "^3.9.10",
+    "typescript": "6.0.3",
+    "typescript-eslint": "^8.71.2"
+  }
+}

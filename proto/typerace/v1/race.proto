@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package typerace.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// Control de la carrera. Ambas RPC requieren el header `x-player-token`.
+service RaceService {
+  // Inicia (o reinicia, como revancha) la carrera. Solo el anfitrión.
+  rpc StartRace(StartRaceRequest) returns (StartRaceResponse);
+  // Reporta el avance del jugador. El cliente debe limitar la frecuencia
+  // (~1 cada 200 ms). El servidor es la autoridad: calcula WPM, precisión y
+  // posición con su propio reloj.
+  rpc SubmitProgress(SubmitProgressRequest) returns (SubmitProgressResponse);
+}
+
+message StartRaceRequest {}
+
+message StartRaceResponse {
+  string race_id = 1;
+}
+
+message SubmitProgressRequest {
+  string race_id = 1;
+  // Cantidad de caracteres correctos desde el inicio del texto.
+  uint32 typed_chars_correct = 2;
+  // Errores acumulados (teclas incorrectas) desde el inicio.
+  uint32 errors = 3;
+  // Hora del cliente; solo informativa (diagnóstico de latencia).
+  google.protobuf.Timestamp client_time = 4;
+}
+
+message SubmitProgressResponse {
+  // Porcentaje aceptado por el servidor.
+  double percent = 1;
+  double wpm = 2;
+  bool finished = 3;
+}

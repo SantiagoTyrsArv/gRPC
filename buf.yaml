@@ -1,0 +1,10 @@
+# Configuración de Buf: módulo de contratos gRPC
+version: v2
+modules:
+  - path: proto
+lint:
+  use:
+    - STANDARD
+breaking:
+  use:
+    - FILE
