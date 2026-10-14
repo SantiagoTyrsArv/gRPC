@@ -40,16 +40,13 @@ El porqué de cada ajuste está en [`deployment.md`](./deployment.md).
 
 1. - [ ] Entra a <https://console.neon.tech> y regístrate (**Continue with GitHub** es lo más
          rápido).
-2. - [ ] Crea un proyecto (**New Project**, o el formulario inicial si es tu primera vez):
-   - **Project name:** `typerace`
-   - **Postgres version:** la que venga por defecto (17 o superior).
-   - **Cloud provider:** AWS.
-   - **Region:** **AWS US West 2 (Oregon)**. Es la misma región del backend en Render
-     (`oregon`); así cada consulta no cruza el continente.
-   - **Create project**.
+2. - [x] Proyecto creado: `shy-mode-35061035`, Postgres 18, región **AWS US East 2 (Ohio)**.
+   - `render.yaml` usa la región `ohio` de Render, la misma que la base: así cada consulta no
+     cruza el continente.
+   - Opcional: renómbralo a `typerace` en **Settings → General**.
 3. - [ ] En el panel del proyecto pulsa **Connect** (arriba a la derecha).
 4. - [ ] En la ventana que se abre:
-   - **Branch:** `main` · **Database:** `neondb` · **Role:** `neondb_owner` (los de defecto).
+   - **Branch:** `production` · **Database:** `neondb` · **Role:** `neondb_owner` (los de defecto).
    - **Connection pooling:** **desactivado**. El host **no** debe contener `-pooler`.
    - Formato: **Connection string**.
    - Pulsa **Show password** y luego **Copy snippet**.
@@ -57,7 +54,7 @@ El porqué de cada ajuste está en [`deployment.md`](./deployment.md).
          Se ve así:
 
    ```
-   postgresql://neondb_owner:XXXXXXXX@ep-algo-123456.us-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+   postgresql://neondb_owner:XXXXXXXX@ep-crimson-heart-b4arj8dg.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
    ```
 
    - Pégala **tal cual**, con `?sslmode=require&channel_binding=require`. El servidor quita
@@ -81,7 +78,7 @@ El archivo `render.yaml` del repo ya define todo el servicio (Docker, health che
          vuelve a Render y elígelo → **Connect**.
 4. - [ ] **Blueprint Name:** `typerace`. **Branch:** `main`.
 5. - [ ] Render lee `render.yaml` y muestra el servicio **typerace-server** (Web Service,
-         Docker, plan **Free**, región **Oregon**).
+         Docker, plan **Free**, región **Ohio**).
 6. - [ ] Te pedirá el valor de **`DATABASE_URL`**: pega la cadena de Neon de la Parte 1.
    - Las demás variables (`NODE_ENV`, `LOG_LEVEL`, `CORS_ORIGIN`) ya vienen en el archivo.
    - **No** agregues `PORT`: Render la define (10000) y el servidor la usa.

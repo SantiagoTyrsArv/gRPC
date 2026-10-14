@@ -30,3 +30,7 @@ Thumbs.db
 
 # Artefactos de pruebas manuales con Playwright MCP
 .playwright-mcp/
+
+# Herramientas locales del agente (skills de Claude Code), no forman parte del proyecto
+.claude/
+skills-lock.json

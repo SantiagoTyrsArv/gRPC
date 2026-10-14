@@ -5,7 +5,8 @@ services:
     name: typerace-server
     runtime: docker
     plan: free
-    region: oregon
+    # Misma región que la base de Neon (aws-us-east-2, Ohio). No se puede cambiar después.
+    region: ohio
     # El contexto es la raíz del monorepo: el servidor necesita proto/ y packages/.
     dockerfilePath: ./apps/server/Dockerfile
     dockerContext: .
