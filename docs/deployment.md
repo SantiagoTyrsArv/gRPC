@@ -97,7 +97,10 @@ página en blanco en producción.
   el estado de Vercel en GitHub, que puede fallar u omitirse sin relación con el backend. Si
   la migración o el arranque fallan, el health check no pasa y sigue en línea la versión
   anterior.
-- Vercel: `ignoreCommand` omite el build si el commit no toca la web, `packages/` ni `proto/`.
+- Vercel: `ignoreCommand` omite el build si nada de la web, `packages/` ni `proto/` cambió
+  desde el **último deploy exitoso** (`VERCEL_GIT_PREVIOUS_SHA`). Comparar solo con `HEAD^`
+  no sirve: un commit que solo toca docs cancelaría también los Redeploy aunque producción
+  siga en una versión vieja. Si no hay deploy previo o el SHA no está en el clon, construye.
 
 ## Limitaciones conocidas
 
