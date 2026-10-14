@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Carreras de tipeo multijugador en tiempo real." />
+    <meta name="theme-color" content="#EDF0F4" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0E1621" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+    />
+    <title>TypeRace</title>
+    <script>
+      // Aplica el tema guardado antes de pintar para evitar parpadeo.
+      (function () {
+        try {
+          var saved = JSON.parse(localStorage.getItem('typerace-theme') || '{}').state;
+          var theme = saved && saved.theme;
+          if (theme !== 'light' && theme !== 'dark') {
+            theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+          document.documentElement.dataset.theme = theme;
+        } catch (e) {
+          document.documentElement.dataset.theme = 'light';
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

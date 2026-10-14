@@ -27,3 +27,6 @@ Thumbs.db
 
 # Vercel
 .vercel
+
+# Artefactos de pruebas manuales con Playwright MCP
+.playwright-mcp/
