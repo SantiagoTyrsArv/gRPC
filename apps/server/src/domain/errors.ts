@@ -10,8 +10,7 @@ export type DomainErrorKind =
   | 'FORBIDDEN'
   | 'ROOM_FULL'
   | 'UNAUTHENTICATED'
-  | 'CHEAT_DETECTED'
-  | 'RATE_LIMITED';
+  | 'CHEAT_DETECTED';
 
 export abstract class DomainError extends Error {
   abstract readonly kind: DomainErrorKind;
@@ -46,11 +45,6 @@ export class RoomFullError extends DomainError {
 export class UnauthenticatedError extends DomainError {
   readonly kind = 'UNAUTHENTICATED';
   override readonly name = 'UnauthenticatedError';
-}
-
-export class RateLimitedError extends DomainError {
-  readonly kind = 'RATE_LIMITED';
-  override readonly name = 'RateLimitedError';
 }
 
 export type CheatReason =
