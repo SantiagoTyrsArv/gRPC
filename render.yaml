@@ -33,7 +33,8 @@ services:
       - key: LOG_LEVEL
         value: info
       - key: CORS_ORIGIN
-        value: https://type-race-santiagoartyrs-projects.vercel.app
+        # Los dos dominios de producción del proyecto de Vercel, separados por comas.
+        value: https://type-race-eta.vercel.app,https://type-race-santiagoartyrs-projects.vercel.app
       # Cadena de conexión DIRECTA de Neon (sin pooler), con ?sslmode=require.
       - key: DATABASE_URL
         sync: false

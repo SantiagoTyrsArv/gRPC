@@ -6,13 +6,13 @@ El porqué de cada ajuste está en [`deployment.md`](./deployment.md).
 
 **Datos que ya conocemos**
 
-| Dato                         | Valor                                                                         |
-| ---------------------------- | ----------------------------------------------------------------------------- |
-| Repositorio GitHub           | `SantiagoTyrsArv/gRPC` (rama `main`)                                          |
-| Proyecto Vercel (ya existe)  | `type-race` en el equipo _santiagoartyrs' projects_                           |
-| Dominio de producción Vercel | `https://type-race-santiagoartyrs-projects.vercel.app`                        |
-| Cadena de conexión de Neon   | Se obtiene en la Parte 1 (**secreta**: no la pegues en el chat ni en el repo) |
-| URL del backend en Render    | Se obtiene en la Parte 2 → anótala aquí: `________________`                   |
+| Dato                         | Valor                                                                                       |
+| ---------------------------- | ------------------------------------------------------------------------------------------- |
+| Repositorio GitHub           | `SantiagoTyrsArv/gRPC` (rama `main`)                                                        |
+| Proyecto Vercel (ya existe)  | `type-race` en el equipo _santiagoartyrs' projects_                                         |
+| Dominio de producción Vercel | `https://type-race-eta.vercel.app` (también `type-race-santiagoartyrs-projects.vercel.app`) |
+| Cadena de conexión de Neon   | Se obtiene en la Parte 1 (**secreta**: no la pegues en el chat ni en el repo)               |
+| URL del backend en Render    | Se obtiene en la Parte 2 → anótala aquí: `________________`                                 |
 
 **Tiempo estimado:** 30 minutos. **Costo:** los tres servicios en plan gratuito, sin tarjeta.
 
@@ -155,7 +155,7 @@ Entra a <https://vercel.com> → equipo **santiagoartyrs' projects** → proyect
 
 El proyecto tiene activada la protección de Vercel (_Standard Protection_).
 
-- [ ] Abre `https://type-race-santiagoartyrs-projects.vercel.app` en una **ventana
+- [ ] Abre `https://type-race-eta.vercel.app` en una **ventana
       privada / incógnito**.
 - [ ] **Si carga la app:** perfecto, no toques nada.
 - [ ] **Si te pide iniciar sesión en Vercel:** nadie más podrá verla. Ve a
@@ -186,7 +186,7 @@ El proyecto tiene activada la protección de Vercel (_Standard Protection_).
       `CORS_ORIGIN`:
 
   ```
-  https://type-race-santiagoartyrs-projects.vercel.app,https://type-race-*-santiagoartyrs-projects.vercel.app
+  https://type-race-eta.vercel.app,https://type-race-santiagoartyrs-projects.vercel.app,https://type-race-*-santiagoartyrs-projects.vercel.app
   ```
 
   Para que el cambio sea permanente, cámbialo también en `render.yaml` y súbelo.

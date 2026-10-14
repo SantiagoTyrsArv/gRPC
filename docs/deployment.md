@@ -77,7 +77,7 @@ algo más (la "despierta") y el driver reconecta solo.
 `CORS_ORIGIN` para los _preview deployments_ de Vercel:
 
 ```
-https://type-race-santiagoartyrs-projects.vercel.app,https://type-race-*-santiagoartyrs-projects.vercel.app
+https://type-race-eta.vercel.app,https://type-race-santiagoartyrs-projects.vercel.app,https://type-race-*-santiagoartyrs-projects.vercel.app
 ```
 
 ### Build del frontend en Vercel
