@@ -87,7 +87,7 @@ flowchart LR
    | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
    | Root Directory                                                       | `apps/web`                                                                                   |
    | Include source files outside of the Root Directory in the Build Step | **Activado** (necesita `proto/` y `packages/`)                                               |
-   | Framework / Build / Output                                           | Se toman de `apps/web/vercel.json` (Vite, `pnpm build`, `dist`)                              |
+   | Framework / Build / Output                                           | Se toman de `apps/web/vercel.json` (Vite, `pnpm --filter @typerace/web... build`, `dist`)    |
    | Ignored Build Step                                                   | Vacío (lo define `ignoreCommand` en `vercel.json`); si pusiste `exit 0` para pausar, quítalo |
 
 3. **Settings → Environment Variables**:
