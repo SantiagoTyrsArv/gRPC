@@ -1,4 +1,4 @@
-# Postgres para desarrollo local (en producción se usa el plugin de Railway)
+# Postgres para desarrollo local (en producción se usa Neon)
 services:
   postgres:
     image: postgres:17-alpine

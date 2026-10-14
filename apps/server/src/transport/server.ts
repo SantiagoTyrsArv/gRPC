@@ -32,7 +32,7 @@ export interface ServerOptions {
   checkDatabase?: () => Promise<boolean>;
 }
 
-/** ~15 s: por debajo del tiempo de inactividad de los proxies (Railway). */
+/** ~15 s: por debajo del tiempo de inactividad de los proxies (Render). */
 export const DEFAULT_HEARTBEAT_MS = 15_000;
 
 const DEFAULT_RATE_LIMITS = {
@@ -70,7 +70,7 @@ export async function buildHttpServer(options: ServerOptions): Promise<FastifyIn
   const loggerInstance: FastifyBaseLogger = options.logger;
   const server = fastify({
     loggerInstance,
-    // Railway termina TLS en su proxy: confiar en X-Forwarded-For para la IP real.
+    // Render termina TLS en su proxy: confiar en X-Forwarded-For para la IP real.
     trustProxy: true,
     // Las RPC se registran en `errorInterceptor`; se evita duplicar logs por petición.
     logController: new LogController({ disableRequestLogging: true }),

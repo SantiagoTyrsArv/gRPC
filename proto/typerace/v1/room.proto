@@ -129,7 +129,7 @@ message RaceFinished {
   repeated PlayerResult results = 2;
 }
 
-// Mantiene viva la conexión a través de proxies (Railway) cada ~15 s.
+// Mantiene viva la conexión a través de proxies (Render) cada ~15 s.
 message Heartbeat {}
 
 message HostChanged {

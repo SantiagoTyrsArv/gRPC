@@ -1,6 +1,6 @@
 /**
  * Intercala un latido cada `intervalMs` sin eventos en un iterable asíncrono.
- * Mantiene vivas las conexiones de streaming a través de proxies (Railway)
+ * Mantiene vivas las conexiones de streaming a través de proxies (Render)
  * que cierran conexiones inactivas.
  */
 export async function* withHeartbeat<T>(

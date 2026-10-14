@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-/** Railway y otros entornos pueden definir variables vacías: se tratan como ausentes. */
+/** Render y otros entornos pueden definir variables vacías: se tratan como ausentes. */
 const optional = <T extends z.ZodType>(schema: T) =>
   z.preprocess((value) => (value === '' ? undefined : value), schema.optional());
 
