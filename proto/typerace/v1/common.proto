@@ -37,7 +37,7 @@ message PlayerProgress {
 message PlayerResult {
   string player_id = 1;
   string nickname = 2;
-  // Posición final (1 = primero). 0 si no terminó.
+  // Posición final (1 = primero). Quienes no terminan se ordenan después, por avance.
   uint32 position = 3;
   double wpm = 4;
   // Precisión entre 0 y 1.

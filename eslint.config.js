@@ -46,6 +46,53 @@ export default tseslint.config(
     languageOptions: { globals: globals.node },
   },
   {
+    // Arquitectura hexagonal: el dominio y la aplicación no conocen la infraestructura,
+    // el transporte ni el código generado de Protobuf.
+    files: ['apps/server/src/domain/**/*.ts', 'apps/server/src/application/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['**/infrastructure/**', '**/transport/**', '**/config/**'],
+              message: 'El dominio y la aplicación no pueden depender de capas externas.',
+            },
+            {
+              group: ['@typerace/proto-gen', '@bufbuild/*', '@connectrpc/*'],
+              message: 'El mapeo proto ↔ dominio vive en transport/.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['apps/server/src/domain/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: [
+                '**/application/**',
+                '**/infrastructure/**',
+                '**/transport/**',
+                '**/config/**',
+              ],
+              message: 'El dominio es puro: no depende de ninguna otra capa.',
+            },
+            {
+              group: ['@typerace/proto-gen', '@bufbuild/*', '@connectrpc/*', 'node:*'],
+              message: 'El dominio no depende de librerías externas.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ['apps/web/**/*.{ts,tsx}'],
     plugins: { 'react-hooks': reactHooks, 'react-refresh': reactRefresh },
     languageOptions: { globals: globals.browser },
