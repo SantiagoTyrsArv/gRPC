@@ -3,36 +3,53 @@
 /* El modo oscuro se controla con data-theme en <html> (interruptor manual). */
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 
-/* Tokens de color: variables CSS que cambian con el tema. */
+/*
+ * Tokens de color. Inspirados en las pantallas de cronometraje: cada color de
+ * estado tiene un único significado en toda la interfaz.
+ *   best    (morado)   → lo mejor: líder de la carrera, récord del ranking.
+ *   correct (verde)    → texto bien escrito, jugador en la meta, listo.
+ *   flag    (amarillo) → atención: acción principal, foco, tu propia fila.
+ *   strip              → franjas de rótulo (siempre oscuras, como en la transmisión).
+ *   error   (rojo)     → error de tipeo, conexión perdida.
+ * Claro = hoja de tiempos impresa; oscuro = monitor del muro de boxes.
+ */
 :root {
-  --c-bg: #edf0f4;
+  --c-bg: #f2f4f7;
   --c-surface: #ffffff;
-  --c-surface-2: #e2e7ee;
-  --c-ink: #14202e;
-  --c-muted: #5b6b7e;
-  --c-line: #c9d2dd;
-  --c-flag: #f2c230;
-  --c-flag-ink: #14202e;
-  --c-correct: #1e7a4c;
-  --c-error: #c8323c;
-  --c-error-bg: #f9dcdf;
-  --c-lane: #dfe5ec;
+  --c-surface-2: #e8ecf2;
+  --c-ink: #131a26;
+  --c-muted: #586477;
+  --c-line: #d4dae3;
+  --c-best: #7a2fe0;
+  --c-best-ink: #ffffff;
+  --c-strip: #131a26;
+  --c-strip-ink: #ffffff;
+  --c-flag: #f5c400;
+  --c-flag-ink: #131a26;
+  --c-correct: #0f8a4c;
+  --c-error: #d1283e;
+  --c-error-bg: #fbe3e6;
+  --c-lane: #e3e8ef;
   color-scheme: light;
 }
 
 [data-theme='dark'] {
-  --c-bg: #0e1621;
-  --c-surface: #172231;
-  --c-surface-2: #1f2c3e;
-  --c-ink: #e7edf4;
-  --c-muted: #93a3b6;
-  --c-line: #2c3b4f;
-  --c-flag: #f2c230;
-  --c-flag-ink: #14202e;
-  --c-correct: #4cc58a;
-  --c-error: #ff6b74;
-  --c-error-bg: #4a1f26;
-  --c-lane: #1b2738;
+  --c-bg: #10151f;
+  --c-surface: #171f2c;
+  --c-surface-2: #212b3b;
+  --c-ink: #eef2f7;
+  --c-muted: #8d99ac;
+  --c-line: #2a3446;
+  --c-best: #b77cff;
+  --c-best-ink: #131a26;
+  --c-strip: #2a3549;
+  --c-strip-ink: #ffffff;
+  --c-flag: #ffd23f;
+  --c-flag-ink: #131a26;
+  --c-correct: #35d07f;
+  --c-error: #ff5a6e;
+  --c-error-bg: #3f1d26;
+  --c-lane: #1d2634;
   color-scheme: dark;
 }
 
@@ -43,6 +60,10 @@
   --color-ink: var(--c-ink);
   --color-muted: var(--c-muted);
   --color-line: var(--c-line);
+  --color-best: var(--c-best);
+  --color-best-ink: var(--c-best-ink);
+  --color-strip: var(--c-strip);
+  --color-strip-ink: var(--c-strip-ink);
   --color-flag: var(--c-flag);
   --color-flag-ink: var(--c-flag-ink);
   --color-correct: var(--c-correct);
@@ -77,26 +98,35 @@
   }
 }
 
+/* Titulares: Archivo condensada y muy pesada, como los rótulos de transmisión. */
 @utility font-display {
   font-family: var(--font-sans);
-  font-stretch: 125%;
-  font-weight: 800;
-  letter-spacing: -0.01em;
+  font-stretch: 68%;
+  font-weight: 850;
+  letter-spacing: -0.005em;
 }
 
-/* Bandera a cuadros de la línea de meta. */
+/* Cifras de cronometraje: condensadas y tabulares para que no bailen al cambiar. */
+@utility font-num {
+  font-family: var(--font-sans);
+  font-stretch: 75%;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Bandera a cuadros (jugador en la meta). */
 @utility checkered {
   background-image:
     linear-gradient(45deg, var(--c-ink) 25%, transparent 25%),
     linear-gradient(-45deg, var(--c-ink) 25%, transparent 25%),
     linear-gradient(45deg, transparent 75%, var(--c-ink) 75%),
     linear-gradient(-45deg, transparent 75%, var(--c-ink) 75%);
-  background-size: 8px 8px;
+  background-size: 6px 6px;
   background-position:
     0 0,
-    0 4px,
-    4px -4px,
-    -4px 0;
+    0 3px,
+    3px -3px,
+    -3px 0;
   background-color: var(--c-surface);
 }
 

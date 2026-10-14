@@ -1,5 +1,5 @@
 import type { Player } from '../../api/types';
-import { Lane } from '../../components/Lane';
+import { TimingTower } from '../../components/TimingTower';
 
 interface PlayerListProps {
   players: Player[];
@@ -7,48 +7,35 @@ interface PlayerListProps {
   maxPlayers: number;
 }
 
-function statusOf(player: Player): string {
-  if (!player.isConnected) return 'Desconectado';
-  if (player.isHost) return 'Anfitrión';
-  return player.isReady ? 'Listo' : 'Preparándose';
+function Status({ player }: { player: Player }) {
+  if (!player.isConnected) return <span>Desconectado</span>;
+  if (player.isHost) return <span className="text-ink">Anfitrión</span>;
+  return player.isReady ? (
+    <span className="font-semibold text-correct">Listo</span>
+  ) : (
+    <span>Preparándose</span>
+  );
 }
 
-/** Parrilla de salida: cada jugador en su carril, con su estado en vivo. */
+/** Parrilla de salida: cada jugador en su puesto, con su estado en vivo. */
 export function PlayerList({ players, selfId, maxPlayers }: PlayerListProps) {
   const freeSlots = maxPlayers - players.length;
   return (
-    <section aria-labelledby="parrilla">
-      <h2 id="parrilla" className="text-lg font-semibold">
-        Parrilla de salida{' '}
-        <span className="font-normal text-muted">
-          ({players.length} de {maxPlayers})
-        </span>
-      </h2>
-      <ul className="mt-2 divide-y divide-line" aria-live="polite">
-        {players.map((player, index) => (
-          <Lane
-            key={player.id}
-            number={index + 1}
-            nickname={player.nickname}
-            percent={0}
-            isSelf={player.id === selfId}
-            dimmed={!player.isConnected}
-            meta={statusOf(player)}
-            trailing={
-              player.isHost || player.isReady ? (
-                <span className="font-semibold text-correct">✓ Listo</span>
-              ) : (
-                <span className="text-muted">Esperando</span>
-              )
-            }
-          />
-        ))}
-      </ul>
-      {freeSlots > 0 && (
-        <p className="mt-3 text-sm text-muted">
-          {freeSlots === 1 ? 'Queda 1 carril libre.' : `Quedan ${freeSlots} carriles libres.`}
-        </p>
-      )}
-    </section>
+    <div aria-live="polite">
+      <TimingTower
+        label="Parrilla de salida"
+        heading={{ title: 'Parrilla de salida', detail: `${players.length}/${maxPlayers}` }}
+        asideHeader="Estado"
+        highlightLeader={false}
+        emptySlots={Math.max(0, freeSlots)}
+        entries={players.map((player) => ({
+          id: player.id,
+          nickname: player.nickname,
+          isSelf: player.id === selfId,
+          dimmed: !player.isConnected,
+          aside: <Status player={player} />,
+        }))}
+      />
+    </div>
   );
 }

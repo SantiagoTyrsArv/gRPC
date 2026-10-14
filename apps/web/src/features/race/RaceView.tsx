@@ -14,7 +14,37 @@ interface RaceViewProps {
   clock: ClockSync;
 }
 
-/** Cuenta regresiva + carrera: pista en vivo y área de escritura. */
+const SECTORS = 3;
+
+function formatClock(ms: number): string {
+  const seconds = Math.ceil(ms / 1000);
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+}
+
+/** Avance propio dividido en tres sectores, como en la telemetría. */
+function SectorBar({ percent }: { percent: number }) {
+  const size = 100 / SECTORS;
+  return (
+    <div aria-hidden="true" className="flex gap-1.5">
+      {Array.from({ length: SECTORS }, (_, i) => {
+        const fill = Math.max(0, Math.min(1, (percent - i * size) / size));
+        return (
+          <div key={i} className="flex flex-1 flex-col gap-1">
+            <div className="h-1.5 overflow-hidden rounded-full bg-lane">
+              <div
+                className={`h-full transition-[width] duration-300 ${fill === 1 ? 'bg-correct' : 'bg-ink'}`}
+                style={{ width: `${fill * 100}%` }}
+              />
+            </div>
+            <span className="text-xs text-muted">Sector {i + 1}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Semáforo + carrera: texto a escribir, telemetría propia y torre de tiempos. */
 export function RaceView({ room, selfId, clock }: RaceViewProps) {
   const race = room.race;
   const now = clock.serverNow(useNow(100));
@@ -48,53 +78,62 @@ export function RaceView({ room, selfId, clock }: RaceViewProps) {
   const selfResult = room.results.find((r) => r.playerId === selfId);
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="font-display text-3xl sm:text-4xl">
+    <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_23rem] lg:gap-8">
+      <div className="flex min-w-0 flex-col gap-5">
+        <h1 className="font-display text-4xl sm:text-5xl">
           {started ? 'En carrera' : 'Preparados'}
         </h1>
-        <p className="text-sm text-muted tabular-nums" aria-live="off">
-          Tiempo restante:{' '}
-          <span className="font-display text-xl text-ink">{Math.ceil(remaining / 1000)} s</span>
-        </p>
+
+        {!started && <Countdown remainingMs={race.startAt - now} />}
+
+        {finished && (
+          <p role="status" className="rounded-lg bg-correct px-4 py-3 font-semibold text-bg">
+            {selfResult
+              ? `Llegaste a la meta en la posición ${selfResult.position}. Esperando al resto de jugadores…`
+              : 'Llegaste a la meta. Esperando al resto de jugadores…'}
+          </p>
+        )}
+
+        <TypingArea engine={engine} enabled={started && !finished} />
+
+        <div className="flex flex-col gap-4 rounded-lg bg-surface p-4">
+          <dl className="grid grid-cols-3 gap-4">
+            <div>
+              <dt className="text-sm text-muted">Velocidad</dt>
+              <dd className="font-num text-3xl">
+                {Math.round(wpm)} <span className="text-base font-medium text-muted">ppm</span>
+              </dd>
+            </div>
+            <div>
+              <dt className="text-sm text-muted">Precisión</dt>
+              <dd className="font-num text-3xl">
+                {formatPercent(calculateAccuracy(position, errors))}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-sm text-muted">Avance</dt>
+              <dd className="font-num text-3xl">{Math.floor(percent)}%</dd>
+            </div>
+          </dl>
+          <SectorBar percent={percent} />
+        </div>
       </div>
 
-      {!started && <Countdown remainingMs={race.startAt - now} />}
-
-      <ProgressTrack
-        players={room.players}
-        progress={room.progress}
-        selfId={selfId}
-        elapsedMs={elapsed}
-        selfOverride={{ percent, wpm, finished }}
-      />
-
-      <TypingArea engine={engine} enabled={started && !finished} />
-
-      <dl className="grid grid-cols-3 gap-4 border-t border-line pt-4 text-center sm:max-w-md">
-        <div>
-          <dt className="text-sm text-muted">Velocidad</dt>
-          <dd className="font-display text-2xl tabular-nums">{Math.round(wpm)} ppm</dd>
-        </div>
-        <div>
-          <dt className="text-sm text-muted">Precisión</dt>
-          <dd className="font-display text-2xl tabular-nums">
-            {formatPercent(calculateAccuracy(position, errors))}
-          </dd>
-        </div>
-        <div>
-          <dt className="text-sm text-muted">Avance</dt>
-          <dd className="font-display text-2xl tabular-nums">{Math.floor(percent)}%</dd>
-        </div>
-      </dl>
-
-      {finished && (
-        <p role="status" className="rounded-md bg-flag px-4 py-3 font-semibold text-flag-ink">
-          {selfResult
-            ? `¡Llegaste a la meta en la posición ${selfResult.position}! Esperando al resto de jugadores…`
-            : '¡Llegaste a la meta! Esperando al resto de jugadores…'}
-        </p>
-      )}
+      <div className="lg:sticky lg:top-6">
+        <ProgressTrack
+          players={room.players}
+          progress={room.progress}
+          results={room.results}
+          selfId={selfId}
+          elapsedMs={elapsed}
+          selfOverride={{ typedCorrect: position, percent, wpm, finished }}
+          heading={{
+            title: started ? 'Carrera en vivo' : 'Parrilla de salida',
+            detail: formatClock(remaining),
+            live: started && room.status === 'RACING',
+          }}
+        />
+      </div>
     </div>
   );
 }

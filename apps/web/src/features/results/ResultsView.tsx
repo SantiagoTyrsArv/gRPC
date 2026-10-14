@@ -3,7 +3,7 @@ import { Alert } from '../../components/Alert';
 import { Button } from '../../components/Button';
 import { useAsyncAction } from '../../hooks/use-async-action';
 import { setReady, startRace } from '../room/room-actions';
-import { ResultsPodium } from './ResultsPodium';
+import { Classification } from './Classification';
 
 interface ResultsViewProps {
   room: Room;
@@ -17,23 +17,32 @@ export function ResultsView({ room, selfId }: ResultsViewProps) {
   const rematch = useAsyncAction(startRace);
   const waitingFor = room.players.filter((p) => !p.isHost && !p.isReady);
   const winner = room.results.find((r) => r.position === 1);
+  const selfResult = room.results.find((r) => r.playerId === selfId);
 
   return (
-    <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="font-display text-3xl sm:text-4xl">
-          {winner?.playerId === selfId ? '¡Ganaste la carrera!' : 'Carrera terminada'}
+    <div className="flex max-w-3xl flex-col gap-8">
+      <div className="flex flex-col gap-2">
+        <h1 className="font-display text-4xl sm:text-5xl">
+          {winner?.playerId === selfId
+            ? 'Ganaste la carrera'
+            : winner
+              ? `Ganó ${winner.nickname}`
+              : 'Carrera terminada'}
         </h1>
-        {winner && winner.playerId !== selfId && (
-          <p className="mt-2 text-muted">
-            {winner.nickname} cruzó primero la meta a {Math.round(winner.wpm)} palabras por minuto.
+        {winner && (
+          <p className="text-lg text-muted">
+            {winner.playerId === selfId ? 'Cruzaste' : 'Cruzó'} primero la meta a{' '}
+            {Math.round(winner.wpm)} palabras por minuto
+            {selfResult && winner.playerId !== selfId
+              ? `. Terminaste en la posición ${selfResult.position} de ${room.results.length}.`
+              : '.'}
           </p>
         )}
       </div>
 
-      <ResultsPodium results={room.results} selfId={selfId} />
+      <Classification results={room.results} selfId={selfId} />
 
-      <section aria-labelledby="revancha" className="flex flex-col gap-3 border-t border-line pt-6">
+      <section aria-labelledby="revancha" className="flex flex-col gap-3">
         <h2 id="revancha" className="text-lg font-semibold">
           ¿Otra carrera?
         </h2>

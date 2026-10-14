@@ -2,10 +2,12 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import type { PlayerResult } from '../../src/api/types';
+import { TimingTower } from '../../src/components/TimingTower';
+import { driverCode } from '../../src/lib/driver-code';
 import { Countdown } from '../../src/features/race/Countdown';
 import { TypingArea } from '../../src/features/race/TypingArea';
 import { useTypingEngine } from '../../src/features/race/use-typing-engine';
-import { ResultsPodium } from '../../src/features/results/ResultsPodium';
+import { Classification } from '../../src/features/results/Classification';
 
 function TypingHarness({ text, enabled = true }: { text: string; enabled?: boolean }) {
   const engine = useTypingEngine(text, enabled);
@@ -63,7 +65,7 @@ describe('Countdown', () => {
   });
 });
 
-describe('ResultsPodium', () => {
+describe('Classification', () => {
   const results: PlayerResult[] = [
     {
       playerId: 'b',
@@ -94,16 +96,44 @@ describe('ResultsPodium', () => {
     },
   ];
 
-  it('muestra el podio y la tabla de resultados', () => {
-    render(<ResultsPodium results={results} selfId="a" />);
-    expect(screen.getByRole('list', { name: 'Podio' })).toBeInTheDocument();
-    expect(screen.getByLabelText('Posición 1')).toBeInTheDocument();
+  it('muestra la clasificación con la diferencia de tiempo respecto al ganador', () => {
+    render(<Classification results={results} selfId="a" />);
+    expect(screen.getByRole('heading', { name: 'Clasificación final' })).toBeInTheDocument();
 
     const rows = screen.getAllByRole('row');
     expect(rows).toHaveLength(4); // encabezado + 3
     expect(rows[1]).toHaveTextContent('Beto');
     expect(rows[1]).toHaveTextContent('72 ppm');
     expect(rows[1]).toHaveTextContent('41.0 s');
+    expect(rows[2]).toHaveTextContent('Ana (tú)');
+    expect(rows[2]).toHaveTextContent('+5.5 s');
     expect(rows[3]).toHaveTextContent('No terminó');
+  });
+});
+
+describe('TimingTower', () => {
+  it('abrevia el apodo en un código de tres letras', () => {
+    expect(driverCode('Valentina')).toBe('VAL');
+    expect(driverCode('ñu ño')).toBe('ÑUÑ');
+    expect(driverCode('Al')).toBe('AL');
+  });
+
+  it('lista a los pilotos en orden y marca al jugador propio', () => {
+    render(
+      <TimingTower
+        label="Torre de tiempos"
+        valueHeader="ppm"
+        asideHeader="Dif."
+        entries={[
+          { id: 'm', nickname: 'Mateo', isSelf: false, value: 57, aside: 'Líder' },
+          { id: 'c', nickname: 'Camila', isSelf: true, value: 44, aside: '+50' },
+        ]}
+      />,
+    );
+    const items = screen.getAllByRole('listitem');
+    expect(items[0]).toHaveTextContent('Posición 1');
+    expect(items[0]).toHaveTextContent('Mateo');
+    expect(items[1]).toHaveTextContent('Camila (tú)');
+    expect(items[1]).toHaveAttribute('aria-current', 'true');
   });
 });

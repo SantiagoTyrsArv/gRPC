@@ -44,24 +44,24 @@ export function TypingArea({ engine, enabled }: TypingAreaProps) {
 
   return (
     <div
-      className={`relative cursor-text rounded-md border-2 bg-surface p-5 sm:p-6 ${
-        hasError ? 'border-error' : enabled ? 'border-ink' : 'border-line'
+      className={`relative cursor-text rounded-lg border-2 bg-surface p-5 transition-colors sm:p-7 ${
+        hasError ? 'border-error' : enabled ? 'border-flag' : 'border-transparent'
       }`}
       onClick={() => inputRef.current?.focus()}
     >
       <p
-        className="font-mono text-lg leading-[1.9] break-words select-none sm:text-xl"
+        className="font-mono text-lg leading-[1.85] break-words select-none sm:text-[1.4rem]"
         aria-hidden="true"
         data-testid="race-text"
       >
         <span className="text-correct">{done}</span>
         {wrong && (
-          <span className="rounded-sm bg-error-bg text-error underline decoration-2">{wrong}</span>
+          <span className="rounded-sm bg-error-bg text-error underline decoration-2 underline-offset-4">
+            {wrong}
+          </span>
         )}
         {current && (
-          <span
-            className={`border-b-4 ${hasError ? 'border-error' : 'border-flag'} ${enabled ? 'motion-safe:animate-pulse' : ''}`}
-          >
+          <span className={`rounded-sm ${hasError ? 'bg-error-bg' : 'bg-flag text-flag-ink'}`}>
             {current}
           </span>
         )}

@@ -8,9 +8,9 @@ export function LeaderboardPage() {
   const { state, reload } = useLeaderboard(20);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex max-w-3xl flex-col gap-6">
       <div>
-        <h1 className="font-display text-3xl sm:text-4xl">Ranking global</h1>
+        <h1 className="font-display text-4xl sm:text-5xl">Ranking global</h1>
         <p className="mt-2 text-muted">Las 20 mejores velocidades en carreras completadas.</p>
       </div>
 

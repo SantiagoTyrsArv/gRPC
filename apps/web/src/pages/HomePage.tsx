@@ -1,47 +1,13 @@
-import { useEffect, useState, type SyntheticEvent } from 'react';
+import { useState, type SyntheticEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { Alert } from '../components/Alert';
 import { Button } from '../components/Button';
-import { Lane } from '../components/Lane';
 import { TextField } from '../components/TextField';
+import { DemoTower } from '../features/home/DemoTower';
 import { useAsyncAction } from '../hooks/use-async-action';
 import { createRoom, joinRoom } from '../features/room/room-actions';
 import { nicknameError } from '../lib/validation';
 import { useNicknameStore } from '../stores/session-store';
-
-const DEMO_LANES = [
-  { nickname: 'Valentina', percent: 86 },
-  { nickname: 'Mateo', percent: 63 },
-  { nickname: 'Camila', percent: 74 },
-];
-
-/** Pista de muestra: los autos arrancan una sola vez al cargar la página. */
-function DemoTrack() {
-  const [started, setStarted] = useState(false);
-  useEffect(() => {
-    const id = requestAnimationFrame(() => {
-      setStarted(true);
-    });
-    return () => {
-      cancelAnimationFrame(id);
-    };
-  }, []);
-  return (
-    <div aria-hidden="true" className="[&_li]:py-2 [&_.duration-300]:duration-[1600ms]">
-      <ul className="divide-y divide-line">
-        {DEMO_LANES.map((lane, index) => (
-          <Lane
-            key={lane.nickname}
-            number={index + 1}
-            nickname={lane.nickname}
-            percent={started ? lane.percent : 0}
-            isSelf={lane.nickname === 'Camila'}
-          />
-        ))}
-      </ul>
-    </div>
-  );
-}
 
 export function HomePage() {
   const navigate = useNavigate();
@@ -79,65 +45,70 @@ export function HomePage() {
   const error = formError ?? create.error ?? join.error;
 
   return (
-    <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:gap-16">
-      <section className="flex flex-col gap-6">
-        <h1 className="font-display text-4xl leading-[1.05] sm:text-6xl">
-          Escribe más rápido que tus amigos.
-        </h1>
-        <p className="max-w-prose text-lg text-muted">
-          Crea una sala, comparte el código y compitan escribiendo el mismo texto. Todos ven el
-          avance de los demás en tiempo real.
-        </p>
-        <DemoTrack />
-      </section>
-
-      <section aria-labelledby="jugar" className="flex flex-col gap-6 rounded-md bg-surface p-6">
-        <h2 id="jugar" className="text-xl font-semibold">
-          Entra a jugar
-        </h2>
-
-        <TextField
-          label="Tu apodo"
-          hint="Entre 2 y 20 caracteres. No necesitas registrarte."
-          value={nickname}
-          maxLength={20}
-          autoComplete="nickname"
-          onChange={(e) => {
-            setNickname(e.target.value);
-          }}
-        />
-
-        {error && <Alert>{error}</Alert>}
-
-        <form onSubmit={(e) => void onCreate(e)}>
-          <Button type="submit" pending={create.pending} className="w-full">
-            Crear sala nueva
-          </Button>
-        </form>
-
-        <div className="flex items-center gap-3 text-sm text-muted" aria-hidden="true">
-          <span className="h-px flex-1 bg-line" /> o únete a una{' '}
-          <span className="h-px flex-1 bg-line" />
+    <div className="grid items-start gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,27rem)] lg:gap-16">
+      <section aria-labelledby="titulo" className="flex max-w-xl flex-col gap-8">
+        <div className="flex flex-col gap-4">
+          <h1 id="titulo" className="font-display text-5xl leading-[0.95] sm:text-7xl">
+            Escribe más rápido que tus amigos.
+          </h1>
+          <p className="max-w-prose text-lg text-muted">
+            Crea una sala, comparte el código y escriban el mismo texto a la vez. La torre de
+            tiempos muestra quién va adelante en cada momento.
+          </p>
         </div>
 
-        <form onSubmit={(e) => void onJoin(e)} className="flex flex-col gap-3">
+        <div className="flex flex-col gap-5">
           <TextField
-            label="Código de sala"
-            placeholder="K7Q2XM"
-            value={code}
-            maxLength={6}
-            autoCapitalize="characters"
-            autoComplete="off"
-            className="font-mono uppercase tracking-[0.3em]"
+            label="Tu apodo"
+            hint="Entre 2 y 20 caracteres. No necesitas registrarte."
+            value={nickname}
+            maxLength={20}
+            autoComplete="nickname"
             onChange={(e) => {
-              setCode(e.target.value.toUpperCase());
+              setNickname(e.target.value);
             }}
           />
-          <Button type="submit" variant="secondary" pending={join.pending}>
-            Unirme a la sala
-          </Button>
-        </form>
+
+          {error && <Alert>{error}</Alert>}
+
+          <form onSubmit={(e) => void onCreate(e)}>
+            <Button type="submit" pending={create.pending} className="min-h-13 w-full text-lg">
+              Crear sala nueva
+            </Button>
+          </form>
+
+          <form
+            onSubmit={(e) => void onJoin(e)}
+            aria-labelledby="unirse"
+            className="flex flex-col gap-2 border-t border-line pt-5"
+          >
+            <p id="unirse" className="text-sm font-semibold">
+              ¿Te pasaron un código? Únete a su sala
+            </p>
+            <div className="flex gap-2">
+              <TextField
+                label="Código de sala"
+                hideLabel
+                wrapperClassName="flex-1"
+                placeholder="K7Q2XM"
+                value={code}
+                maxLength={6}
+                autoCapitalize="characters"
+                autoComplete="off"
+                className="w-full font-mono text-lg uppercase tracking-[0.3em]"
+                onChange={(e) => {
+                  setCode(e.target.value.toUpperCase());
+                }}
+              />
+              <Button type="submit" variant="secondary" pending={join.pending} className="shrink-0">
+                Unirme
+              </Button>
+            </div>
+          </form>
+        </div>
       </section>
+
+      <DemoTower />
     </div>
   );
 }

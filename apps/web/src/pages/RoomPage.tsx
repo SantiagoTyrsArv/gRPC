@@ -28,7 +28,12 @@ function JoinPanel({ code, expired }: { code: string; expired: boolean }) {
 
   return (
     <div className="mx-auto flex max-w-md flex-col gap-6">
-      <h1 className="font-display text-3xl">Sala {code}</h1>
+      <div className="flex flex-col gap-2">
+        <h1 className="font-display text-4xl">Sala {code}</h1>
+        <p className="text-muted">
+          Te invitaron a una carrera. Elige tu apodo para entrar a la parrilla de salida.
+        </p>
+      </div>
       {expired && (
         <Alert tone="info">Tu sesión en esta sala terminó. Puedes volver a unirte.</Alert>
       )}
