@@ -42,6 +42,7 @@ export function fromProtoProgress(p: ProtoProgress): Progress {
   return {
     playerId: p.playerId,
     typedCorrect: p.typedCharsCorrect,
+    errors: p.errors,
     percent: p.percent,
     wpm: p.wpm,
     finished: p.finished,

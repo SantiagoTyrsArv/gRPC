@@ -43,7 +43,7 @@ describe('fromWatchRoomResponse', () => {
           players: [{ id: 'a', nickname: 'Ana', isHost: true, isReady: false, isConnected: true }],
           race: { id: 'r1', text: 'hola', startAt: 1_000, deadlineAt: 121_000 },
           progress: {
-            a: { playerId: 'a', typedCorrect: 2, percent: 50, wpm: 40, finished: false },
+            a: { playerId: 'a', typedCorrect: 2, errors: 0, percent: 50, wpm: 40, finished: false },
           },
           results: [],
         },

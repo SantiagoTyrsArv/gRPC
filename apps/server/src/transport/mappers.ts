@@ -47,6 +47,7 @@ export function toProtoProgress(progress: PlayerProgressView): PlayerProgress {
   return create(PlayerProgressSchema, {
     playerId: progress.playerId,
     typedCharsCorrect: progress.typedCorrect,
+    errors: progress.errors,
     percent: progress.percent,
     wpm: progress.wpm,
     finished: progress.finished,

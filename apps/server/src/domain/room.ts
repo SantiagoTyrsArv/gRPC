@@ -309,6 +309,7 @@ export class Room {
     return {
       playerId: player.id,
       typedCorrect: player.race.typedCorrect,
+      errors: player.race.errors,
       percent: calculatePercent(player.race.typedCorrect, race.text.content.length),
       wpm: calculateWpm(player.race.typedCorrect, end - race.startAt),
       finished: player.finished,

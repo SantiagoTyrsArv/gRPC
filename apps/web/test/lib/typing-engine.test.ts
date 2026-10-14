@@ -53,6 +53,18 @@ describe('typingReducer', () => {
     expect(type(createTypingState('Él es'), 'Él es').finished).toBe(true);
   });
 
+  it('se reanuda desde un avance previo (recarga en plena carrera)', () => {
+    const resumed = createTypingState('hola mundo', { position: 5, errors: 2 });
+    expect(resumed).toMatchObject({ position: 5, errors: 2, wrong: '', finished: false });
+    expect(type(resumed, 'mundo').finished).toBe(true);
+    // Valores fuera de rango se acotan.
+    expect(createTypingState('abc', { position: 99, errors: -1 })).toMatchObject({
+      position: 3,
+      errors: 0,
+      finished: true,
+    });
+  });
+
   it('se reinicia con un texto nuevo', () => {
     const state = typingReducer(type(createTypingState('abc'), 'ab'), {
       type: 'reset',

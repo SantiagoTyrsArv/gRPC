@@ -24,6 +24,17 @@ describe('useTypingEngine', () => {
     expect(result.current.state.finished).toBe(true);
   });
 
+  it('reanuda desde el progreso aceptado por el servidor', () => {
+    const { result } = renderHook(() =>
+      useTypingEngine('hola mundo', true, { position: 5, errors: 1 }),
+    );
+    expect(result.current.state).toMatchObject({ position: 5, errors: 1 });
+    act(() => {
+      result.current.input('m');
+    });
+    expect(result.current.state.position).toBe(6);
+  });
+
   it('se reinicia cuando cambia el texto (revancha)', () => {
     const { result, rerender } = renderHook(({ text }) => useTypingEngine(text, true), {
       initialProps: { text: 'abc' },

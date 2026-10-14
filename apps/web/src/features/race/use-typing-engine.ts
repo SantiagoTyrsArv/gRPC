@@ -1,5 +1,10 @@
-import { useCallback, useEffect, useReducer } from 'react';
-import { createTypingState, typingReducer, type TypingState } from '../../lib/typing-engine';
+import { useCallback, useReducer, useState } from 'react';
+import {
+  createTypingState,
+  typingReducer,
+  type TypingResume,
+  type TypingState,
+} from '../../lib/typing-engine';
 
 export interface TypingEngine {
   state: TypingState;
@@ -9,15 +14,24 @@ export interface TypingEngine {
 }
 
 /**
- * Lógica de escritura separada de la UI. Se reinicia al cambiar el texto
- * (por ejemplo, en una revancha).
+ * Lógica de escritura separada de la UI. Puede reanudarse desde un avance
+ * previo (`resume`) y se reinicia si cambia el texto (por ejemplo, en una revancha).
  */
-export function useTypingEngine(text: string, enabled: boolean): TypingEngine {
-  const [state, dispatch] = useReducer(typingReducer, text, createTypingState);
+export function useTypingEngine(
+  text: string,
+  enabled: boolean,
+  resume?: TypingResume,
+): TypingEngine {
+  const [state, dispatch] = useReducer(typingReducer, undefined, () =>
+    createTypingState(text, resume),
+  );
 
-  useEffect(() => {
+  // Patrón "ajustar estado al cambiar una prop": reinicia sin efecto extra.
+  const [currentText, setCurrentText] = useState(text);
+  if (text !== currentText) {
+    setCurrentText(text);
     dispatch({ type: 'reset', text });
-  }, [text]);
+  }
 
   const input = useCallback(
     (chars: string) => {

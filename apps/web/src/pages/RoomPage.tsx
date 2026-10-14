@@ -9,12 +9,12 @@ import { RaceView } from '../features/race/RaceView';
 import { ResultsView } from '../features/results/ResultsView';
 import { joinRoom, leaveRoom } from '../features/room/room-actions';
 import { useRoomStream } from '../features/room/use-room-stream';
-import { useSessionStore } from '../stores/session-store';
+import { useNicknameStore, useSessionStore } from '../stores/session-store';
 import { nicknameError } from '../lib/validation';
 
 /** Unirse a la sala desde un enlace compartido (o tras perder la sesión). */
 function JoinPanel({ code, expired }: { code: string; expired: boolean }) {
-  const lastNickname = useSessionStore((s) => s.lastNickname);
+  const lastNickname = useNicknameStore((s) => s.lastNickname);
   const [nickname, setNickname] = useState(lastNickname);
   const [formError, setFormError] = useState<string | null>(null);
   const join = useAsyncAction(joinRoom);

@@ -123,7 +123,7 @@ describe('SubmitProgress y fin de carrera', () => {
     expect(await results.topByWpm(10)).toEqual([]); // nadie terminó
   });
 
-  it('termina cuando los conectados terminaron aunque otro se desconecte', async () => {
+  it('termina tras el margen de reconexión si los conectados ya terminaron', async () => {
     const { app, ana, betoTab, anaStream, scheduler } = await setupRoom();
     const { raceId } = await app.startRace.execute(ana.playerToken);
     await scheduler.advance(3_000 + 10_000);
@@ -136,7 +136,42 @@ describe('SubmitProgress y fin de carrera', () => {
 
     betoTab.abort();
     await flush();
-    expect(anaStream.types().slice(-2)).toEqual(['playerConnectionChanged', 'raceFinished']);
+    // Beto podría estar recargando la página: la carrera sigue durante el margen.
+    expect(anaStream.types().at(-1)).toBe('playerConnectionChanged');
+    expect(anaStream.types()).not.toContain('raceFinished');
+
+    await scheduler.advance(10_000);
+    await flush();
+    expect(anaStream.types().at(-1)).toBe('raceFinished');
+  });
+
+  it('reconectar dentro del margen permite seguir compitiendo', async () => {
+    const { app, ana, beto, betoTab, anaStream, scheduler, rooms } = await setupRoom();
+    const { raceId } = await app.startRace.execute(ana.playerToken);
+    await scheduler.advance(3_000 + 10_000);
+    await app.submitProgress.execute(beto.playerToken, { raceId, typedCorrect: 4, errors: 2 });
+    await app.submitProgress.execute(ana.playerToken, {
+      raceId,
+      typedCorrect: TEXT.length,
+      errors: 0,
+    });
+
+    betoTab.abort(); // recarga la página…
+    await flush();
+    const reloaded = collect(app.watchRoom.execute(beto.playerToken, new AbortController().signal));
+    await flush();
+
+    // …y el snapshot le devuelve su progreso y errores para reanudar.
+    const snapshot = reloaded.events[0];
+    expect(
+      snapshot?.type === 'snapshot' &&
+        snapshot.room.progress.find((p) => p.playerId === beto.playerId),
+    ).toMatchObject({ typedCorrect: 4, errors: 2 });
+
+    await scheduler.advance(10_000);
+    await flush();
+    expect(anaStream.types()).not.toContain('raceFinished');
+    expect((await rooms.findByCode(ana.roomCode))?.status).toBe('RACING');
   });
 
   it('termina la carrera si sale el único jugador que faltaba', async () => {

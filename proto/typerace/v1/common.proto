@@ -31,6 +31,8 @@ message PlayerProgress {
   double percent = 3;
   double wpm = 4;
   bool finished = 5;
+  // Errores acumulados; permite al cliente reanudar tras recargar la página.
+  uint32 errors = 6;
 }
 
 // Resultado final de un jugador en una carrera.

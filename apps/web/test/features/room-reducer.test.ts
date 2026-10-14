@@ -50,7 +50,14 @@ describe('roomReducer', () => {
     room = roomReducer(room, { type: 'raceStarted', raceId: 'r1' });
     expect(room?.status).toBe('RACING');
 
-    const progress = { playerId: 'b', typedCorrect: 2, percent: 50, wpm: 30, finished: false };
+    const progress = {
+      playerId: 'b',
+      typedCorrect: 2,
+      errors: 1,
+      percent: 50,
+      wpm: 30,
+      finished: false,
+    };
     room = roomReducer(room, { type: 'progressUpdated', progress });
     expect(room?.progress.b).toEqual(progress);
 

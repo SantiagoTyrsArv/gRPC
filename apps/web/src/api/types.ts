@@ -16,6 +16,7 @@ export interface Player {
 export interface Progress {
   playerId: string;
   typedCorrect: number;
+  errors: number;
   percent: number;
   wpm: number;
   finished: boolean;

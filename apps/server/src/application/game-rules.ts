@@ -5,6 +5,11 @@ export interface GameRules extends RoomRules {
   countdownMs: number;
   raceDurationMs: number;
   inactiveRoomTtlMs: number;
+  /**
+   * Margen para reconectar durante una carrera: una desconexión no da la
+   * carrera por terminada hasta que pasa este tiempo (p. ej. al recargar).
+   */
+  disconnectGraceMs: number;
 }
 
 export const DEFAULT_GAME_RULES: GameRules = {
@@ -14,4 +19,5 @@ export const DEFAULT_GAME_RULES: GameRules = {
   countdownMs: 3_000,
   raceDurationMs: 120_000,
   inactiveRoomTtlMs: 30 * 60_000,
+  disconnectGraceMs: 10_000,
 };

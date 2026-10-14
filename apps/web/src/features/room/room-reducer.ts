@@ -1,7 +1,7 @@
 import type { Player, Progress, Room, RoomEvent } from '../../api/types';
 
 function emptyProgress(playerId: string): Progress {
-  return { playerId, typedCorrect: 0, percent: 0, wpm: 0, finished: false };
+  return { playerId, typedCorrect: 0, errors: 0, percent: 0, wpm: 0, finished: false };
 }
 
 function updatePlayer(room: Room, playerId: string, patch: Partial<Player>): Room {

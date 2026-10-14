@@ -31,6 +31,7 @@ export interface PlayerView {
 export interface PlayerProgressView {
   playerId: string;
   typedCorrect: number;
+  errors: number;
   percent: number;
   wpm: number;
   finished: boolean;

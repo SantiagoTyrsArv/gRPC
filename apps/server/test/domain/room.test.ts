@@ -176,6 +176,7 @@ describe('progreso y resultados', () => {
     expect(progress).toEqual({
       playerId: 'host',
       typedCorrect: 5,
+      errors: 1,
       percent: 50,
       wpm: 10, // 1 palabra en 0,1 min
       finished: false,

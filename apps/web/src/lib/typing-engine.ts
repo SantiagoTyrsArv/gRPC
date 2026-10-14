@@ -21,8 +21,21 @@ export interface TypingState {
 export type TypingAction =
   { type: 'input'; chars: string } | { type: 'backspace' } | { type: 'reset'; text: string };
 
-export function createTypingState(text: string): TypingState {
-  return { text, position: 0, wrong: '', errors: 0, finished: text.length === 0 };
+/** Avance desde el que se reanuda (p. ej. tras recargar la página en plena carrera). */
+export interface TypingResume {
+  position: number;
+  errors: number;
+}
+
+export function createTypingState(text: string, resume?: TypingResume): TypingState {
+  const position = Math.min(Math.max(0, resume?.position ?? 0), text.length);
+  return {
+    text,
+    position,
+    wrong: '',
+    errors: Math.max(0, resume?.errors ?? 0),
+    finished: position === text.length,
+  };
 }
 
 function typeChar(state: TypingState, char: string): TypingState {

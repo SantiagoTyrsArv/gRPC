@@ -7,7 +7,7 @@ import { TextField } from '../components/TextField';
 import { useAsyncAction } from '../hooks/use-async-action';
 import { createRoom, joinRoom } from '../features/room/room-actions';
 import { nicknameError } from '../lib/validation';
-import { useSessionStore } from '../stores/session-store';
+import { useNicknameStore } from '../stores/session-store';
 
 const DEMO_LANES = [
   { nickname: 'Valentina', percent: 86 },
@@ -45,7 +45,7 @@ function DemoTrack() {
 
 export function HomePage() {
   const navigate = useNavigate();
-  const lastNickname = useSessionStore((s) => s.lastNickname);
+  const lastNickname = useNicknameStore((s) => s.lastNickname);
   const [nickname, setNickname] = useState(lastNickname);
   const [code, setCode] = useState('');
   const [formError, setFormError] = useState<string | null>(null);

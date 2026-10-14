@@ -21,8 +21,13 @@ export function RaceView({ room, selfId, clock }: RaceViewProps) {
   const text = race?.text ?? '';
 
   const started = race !== null && now >= race.startAt;
-  const finishedByServer = room.progress[selfId]?.finished ?? false;
-  const engine = useTypingEngine(text, started && !finishedByServer);
+  const serverProgress = room.progress[selfId];
+  const finishedByServer = serverProgress?.finished ?? false;
+  // Al recargar en plena carrera, se reanuda desde lo que el servidor ya aceptó.
+  const engine = useTypingEngine(text, started && !finishedByServer, {
+    position: serverProgress?.typedCorrect ?? 0,
+    errors: serverProgress?.errors ?? 0,
+  });
   const { position, errors, finished } = engine.state;
 
   useProgressReporter(
@@ -60,6 +65,7 @@ export function RaceView({ room, selfId, clock }: RaceViewProps) {
         players={room.players}
         progress={room.progress}
         selfId={selfId}
+        elapsedMs={elapsed}
         selfOverride={{ percent, wpm, finished }}
       />
 

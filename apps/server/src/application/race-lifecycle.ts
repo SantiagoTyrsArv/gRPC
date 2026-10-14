@@ -104,7 +104,21 @@ export class RaceLifecycle {
     if (!room.setConnected(playerId, connected, this.deps.clock.now())) return;
     await this.deps.rooms.save(room);
     this.deps.bus.publish(room.code, { type: 'playerConnectionChanged', playerId, connected });
-    if (!connected) await this.finishIfComplete(room);
+    if (!connected) this.scheduleCompletionCheck(room);
+  }
+
+  /**
+   * Tras una desconexión en plena carrera, espera el margen de reconexión
+   * antes de comprobar si la carrera terminó (los conectados ya llegaron).
+   */
+  private scheduleCompletionCheck(room: Room): void {
+    const raceId = room.race?.id;
+    if (room.status !== 'RACING' || !raceId) return;
+    const handle = this.deps.scheduler.schedule(this.deps.rules.disconnectGraceMs, async () => {
+      const current = await this.deps.rooms.findByCode(room.code);
+      if (current?.race?.id === raceId) await this.finishIfComplete(current);
+    });
+    this.timers.set(room.code, [...(this.timers.get(room.code) ?? []), handle]);
   }
 
   /** Elimina la sala, sus temporizadores y cierra los streams abiertos. */
