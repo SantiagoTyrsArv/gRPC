@@ -1,6 +1,6 @@
 /**
- * Aplica migraciones y seed. En Railway se ejecuta como `preDeployCommand`;
- * en local con `pnpm db:migrate`.
+ * Aplica migraciones y seed. En la imagen Docker se ejecuta al arrancar, antes
+ * del servidor (ver `apps/server/Dockerfile`); en local con `pnpm db:migrate`.
  */
 import { loadEnv } from '../config/env.js';
 import { createDatabase } from '../infrastructure/db/client.js';

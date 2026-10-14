@@ -1,0 +1,38 @@
+# Blueprint de Render para el backend de TypeRace (https://render.com/docs/blueprint-spec).
+# La base de datos es Neon: su DATABASE_URL se pide al crear el Blueprint.
+services:
+  - type: web
+    name: typerace-server
+    runtime: docker
+    plan: free
+    region: oregon
+    # El contexto es la raíz del monorepo: el servidor necesita proto/ y packages/.
+    dockerfilePath: ./apps/server/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    # Las salas viven en memoria: debe haber una sola instancia.
+    numInstances: 1
+    # `checksPass` esperaría también el estado de Vercel en GitHub (que puede fallar u
+    # omitirse sin afectar al backend); se despliega en cada commit de main.
+    autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - apps/server/**
+        - packages/**
+        - proto/**
+        - buf.gen.yaml
+        - pnpm-lock.yaml
+        - pnpm-workspace.yaml
+        - package.json
+        - tsconfig.base.json
+        - render.yaml
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: LOG_LEVEL
+        value: info
+      - key: CORS_ORIGIN
+        value: https://type-race-santiagoartyrs-projects.vercel.app
+      # Cadena de conexión DIRECTA de Neon (sin pooler), con ?sslmode=require.
+      - key: DATABASE_URL
+        sync: false

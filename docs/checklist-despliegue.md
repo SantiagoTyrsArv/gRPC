@@ -1,171 +1,118 @@
 # Checklist de despliegue de TypeRace (paso a paso)
 
-Lista personal para dejar TypeRace en producción. Ve marcando cada casilla `[ ]` → `[x]`.
-La referencia técnica (el porqué de cada ajuste) está en [`deployment.md`](./deployment.md).
+Lista personal para dejar TypeRace en producción con **Neon** (base de datos), **Render**
+(backend) y **Vercel** (frontend). Ve marcando cada casilla `[ ]` → `[x]`.
+El porqué de cada ajuste está en [`deployment.md`](./deployment.md).
 
 **Datos que ya conocemos**
 
-| Dato                         | Valor                                                      |
-| ---------------------------- | ---------------------------------------------------------- |
-| Repositorio GitHub           | `SantiagoTyrsArv/gRPC` (rama `main`)                       |
-| Proyecto Vercel (ya existe)  | `type-race` en el equipo _santiagoartyrs' projects_        |
-| Dominio de producción Vercel | `https://type-race-santiagoartyrs-projects.vercel.app`     |
-| Proyecto Railway             | **Aún no existe** (lo creas en la Parte 2)                 |
-| Dominio de Railway           | Se genera en la Parte 2 → anótalo aquí: `________________` |
+| Dato                         | Valor                                                                         |
+| ---------------------------- | ----------------------------------------------------------------------------- |
+| Repositorio GitHub           | `SantiagoTyrsArv/gRPC` (rama `main`)                                          |
+| Proyecto Vercel (ya existe)  | `type-race` en el equipo _santiagoartyrs' projects_                           |
+| Dominio de producción Vercel | `https://type-race-santiagoartyrs-projects.vercel.app`                        |
+| Cadena de conexión de Neon   | Se obtiene en la Parte 1 (**secreta**: no la pegues en el chat ni en el repo) |
+| URL del backend en Render    | Se obtiene en la Parte 2 → anótala aquí: `________________`                   |
 
-**Tiempo estimado:** 30–45 minutos. **Costo:** Railway cobra por uso (el plan Hobby
-incluye un crédito mensual); Vercel Hobby es gratis.
+**Tiempo estimado:** 30 minutos. **Costo:** los tres servicios en plan gratuito, sin tarjeta.
 
 > **Regla de oro:** las variables `VITE_*` se "hornean" dentro del frontend al
 > construirlo. Cada vez que cambies `VITE_API_URL` en Vercel tienes que hacer **Redeploy**.
-> En cambio, en Railway basta con guardar la variable: redespliega solo.
+> En Render, en cambio, al guardar una variable el servicio se redespliega solo.
 
 ---
 
-## Parte 0 — Subir la corrección del build de Vercel
+## Parte 0 — Subir los cambios de Render + Neon
 
-Vercel fallaba porque restauraba `node_modules` desde caché y no generaba el código de
-`proto-gen`. Ya está corregido en `apps/web/vercel.json`; solo falta subirlo.
-
-- [ ] En la terminal, desde la raíz del repo:
-
-  ```powershell
-  git add apps/web/vercel.json docs/deployment.md docs/checklist-despliegue.md
-  git status
-  git commit -m "fix(web): construir proto-gen antes del frontend en vercel" -m "Vercel restaura node_modules desde caché y el install no ejecuta prepare." -m "Faltaba el código generado de proto-gen."
-  git push origin main
-  ```
-
-  > Cada línea del mensaje debe tener como máximo 100 caracteres: el hook `commit-msg`
-  > (commitlint) rechaza el commit si no, y entonces `git push` no sube nada
-  > (`Everything up-to-date`). Comprueba con `git log --oneline -3` antes del push.
-
+- [ ] En la terminal, desde la raíz del repo, haz el commit con el mensaje que te pasé en el
+      chat y súbelo con `git push origin main`.
+- [ ] Comprueba que el commit existe **antes** del push: `git log --oneline -3`.
+  - Si el commit no aparece, el hook `commit-msg` (commitlint) lo rechazó: cada línea del
+    mensaje debe tener **como máximo 100 caracteres**.
 - [ ] En GitHub → pestaña **Actions**, espera a que el workflow **CI** quede en verde
-      (dos jobs: _Lint, typecheck, test y build_ e _Imagen Docker del servidor_).
-- [ ] Ignora por ahora el deploy que se lanza en Vercel: **va a fallar** con
-      `Falta VITE_API_URL`. Es lo esperado; lo resolvemos en la Parte 3.
+      (_Lint, typecheck, test y build_ e _Imagen Docker del servidor_).
+- [ ] El deploy que se lanza en Vercel **va a fallar** con `Falta VITE_API_URL`. Es lo
+      esperado; lo resolvemos en la Parte 3.
 
 ---
 
-## Parte 1 — Railway: base de datos PostgreSQL
+## Parte 1 — Neon: base de datos PostgreSQL
 
-1. - [ ] Entra a <https://railway.com> e inicia sesión (la misma cuenta del proyecto FAKESNEWS).
-2. - [ ] Arriba a la derecha: **New** (o **+ New Project**) → **Empty Project**.
-3. - [ ] Ponle nombre al proyecto: arriba a la izquierda, clic en el nombre aleatorio →
-         renómbralo a `typerace`.
-4. - [ ] Dentro del proyecto (el lienzo vacío): botón **Create** (o clic derecho en el lienzo)
-         → **Database** → **Add PostgreSQL**.
-5. - [ ] Espera a que el servicio **Postgres** quede con el punto verde (≈30 s).
-6. - [ ] Comprobación: clic en **Postgres** → pestaña **Variables** → debe existir
-         `DATABASE_URL`. **No la copies a mano**; la referenciaremos en la Parte 2.
+1. - [ ] Entra a <https://console.neon.tech> y regístrate (**Continue with GitHub** es lo más
+         rápido).
+2. - [ ] Crea un proyecto (**New Project**, o el formulario inicial si es tu primera vez):
+   - **Project name:** `typerace`
+   - **Postgres version:** la que venga por defecto (17 o superior).
+   - **Cloud provider:** AWS.
+   - **Region:** **AWS US West 2 (Oregon)**. Es la misma región del backend en Render
+     (`oregon`); así cada consulta no cruza el continente.
+   - **Create project**.
+3. - [ ] En el panel del proyecto pulsa **Connect** (arriba a la derecha).
+4. - [ ] En la ventana que se abre:
+   - **Branch:** `main` · **Database:** `neondb` · **Role:** `neondb_owner` (los de defecto).
+   - **Connection pooling:** **desactivado**. El host **no** debe contener `-pooler`.
+   - Formato: **Connection string**.
+   - Pulsa **Show password** y luego **Copy snippet**.
+5. - [ ] Guarda la cadena en un lugar seguro (un gestor de contraseñas o un bloc de notas local).
+         Se ve así:
+
+   ```
+   postgresql://neondb_owner:XXXXXXXX@ep-algo-123456.us-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+   ```
+
+   - Pégala **tal cual**, con `?sslmode=require&channel_binding=require`. El servidor quita
+     `channel_binding` automáticamente (el driver no lo soporta) y mantiene el TLS.
+   - **No** necesitas crear tablas: el backend aplica las migraciones y carga los 25 textos
+     al arrancar.
 
 ---
 
-## Parte 2 — Railway: servicio del backend
+## Parte 2 — Render: backend
 
-### 2.1 Crear el servicio desde GitHub
+### 2.1 Crear el servicio desde el Blueprint
 
-1. - [ ] En el lienzo del proyecto: **Create** → **GitHub Repo**.
-2. - [ ] Si es la primera vez, Railway pide instalar su app de GitHub:
-         **Configure GitHub App** → elige tu cuenta → da acceso al repo `gRPC`
-         (o a todos) → **Save**. Vuelve a Railway.
-3. - [ ] Elige `SantiagoTyrsArv/gRPC`.
-4. - [ ] Railway crea el servicio y **lanza un primer build de inmediato**. Probablemente
-         falle (aún no tiene variables ni la ruta del Dockerfile). **No pasa nada**; sigue.
-5. - [ ] Renombra el servicio: clic en el servicio → **Settings** → arriba, campo del
-         nombre → `server`.
+El archivo `render.yaml` del repo ya define todo el servicio (Docker, health check,
+1 instancia, variables). Solo hay que conectarlo.
 
-### 2.2 Settings del servicio
+1. - [ ] Entra a <https://dashboard.render.com> y regístrate con **GitHub**.
+2. - [ ] Arriba a la derecha: **+ New** → **Blueprint**.
+3. - [ ] **Connect a repository:** si no aparece `SantiagoTyrsArv/gRPC`, pulsa
+         **Configure account** (o _Connect GitHub_) → da acceso al repo `gRPC` → **Save** →
+         vuelve a Render y elígelo → **Connect**.
+4. - [ ] **Blueprint Name:** `typerace`. **Branch:** `main`.
+5. - [ ] Render lee `render.yaml` y muestra el servicio **typerace-server** (Web Service,
+         Docker, plan **Free**, región **Oregon**).
+6. - [ ] Te pedirá el valor de **`DATABASE_URL`**: pega la cadena de Neon de la Parte 1.
+   - Las demás variables (`NODE_ENV`, `LOG_LEVEL`, `CORS_ORIGIN`) ya vienen en el archivo.
+   - **No** agregues `PORT`: Render la define (10000) y el servidor la usa.
+7. - [ ] Pulsa **Deploy Blueprint** (o **Apply**).
 
-Clic en el servicio `server` → pestaña **Settings**. Ve sección por sección:
+### 2.2 Verificar el despliegue
 
-**Source**
-
-- [ ] **Root Directory:** déjalo **vacío**. (El Dockerfile necesita `proto/` y
-      `packages/`, que están fuera de `apps/server`.)
-- [ ] **Branch connected to production:** `main`.
-- [ ] **Wait for CI:** actívalo si aparece. Así Railway no despliega un commit con el CI en rojo.
-
-**Build**
-
-- [ ] **Builder:** elige **Dockerfile** (no Railpack/Nixpacks).
-- [ ] **Dockerfile Path:** `apps/server/Dockerfile`
-  - Si no ves este campo, lo resolvemos con una variable en el paso 2.3.
-- [ ] **Watch Paths** (una por línea). Hacen que solo se redespliegue cuando cambia
-      algo del backend:
-
-  ```
-  /apps/server/**
-  /packages/**
-  /proto/**
-  /pnpm-lock.yaml
-  ```
-
-**Deploy**
-
-- [ ] **Pre-deploy Command:** `node dist/scripts/migrate.js`
-      (aplica las migraciones y carga los 25 textos de la carrera antes de cada despliegue).
-- [ ] **Healthcheck Path:** `/health`
-- [ ] **Healthcheck Timeout:** `100`
-- [ ] **Restart Policy:** **On Failure**, máximo de reintentos `5`.
-- [ ] **Replicas / Regions:** deja **1 réplica**. Las salas viven en memoria; con 2 réplicas
-      cada jugador podría caer en una instancia distinta y no se verían entre sí.
-- [ ] **Serverless / App Sleeping:** déjalo **desactivado**. Si el servicio "duerme", se
-      cortan las carreras en curso.
-
-### 2.3 Variables del servicio
-
-Clic en `server` → pestaña **Variables** → **+ New Variable** (o **Raw Editor** para pegar
-todo junto).
-
-- [ ] `DATABASE_URL` → escribe exactamente `${{Postgres.DATABASE_URL}}`
-  - Al escribir `${{` Railway autocompleta; elige **Postgres → DATABASE_URL**.
-  - Si renombraste el servicio de base de datos, cambia `Postgres` por ese nombre.
-- [ ] `NODE_ENV` → `production`
-- [ ] `LOG_LEVEL` → `info`
-- [ ] `CORS_ORIGIN` → `https://type-race-santiagoartyrs-projects.vercel.app`
-  - Sin barra final. (Como ya conocemos el dominio de Vercel, lo dejamos bien desde ya.)
-- [ ] **Solo si en 2.2 no apareció _Dockerfile Path_:**
-      `RAILWAY_DOCKERFILE_PATH` → `apps/server/Dockerfile`
-- [ ] **NO** crees `PORT` ni `HOST`: Railway inyecta `PORT` y el servidor ya escucha en `0.0.0.0`.
-
-Si usas el **Raw Editor**, pega esto:
-
-```env
-DATABASE_URL=${{Postgres.DATABASE_URL}}
-NODE_ENV=production
-LOG_LEVEL=info
-CORS_ORIGIN=https://type-race-santiagoartyrs-projects.vercel.app
-```
-
-- [ ] Pulsa **Deploy** / **Apply changes** (Railway muestra un banner con los cambios
-      pendientes arriba del lienzo).
-
-### 2.4 Dominio público
-
-1. - [ ] `server` → **Settings** → sección **Networking** → **Public Networking** →
-         **Generate Domain**.
-2. - [ ] Si pregunta el puerto, escribe `8080`.
-3. - [ ] Copia la URL generada (algo como `https://server-production-xxxx.up.railway.app`)
-         y anótala arriba en la tabla de **Datos**.
-
-### 2.5 Verificar el despliegue
-
-1. - [ ] `server` → pestaña **Deployments** → abre el despliegue más reciente.
-2. - [ ] En los logs de build debe verse el Dockerfile ejecutándose
+1. - [ ] **Dashboard → typerace-server → Events / Logs.** El primer build tarda 3–6 minutos
+         (el plan gratuito es lento). En el log de build se ve el Dockerfile
          (`FROM node:24-alpine`, `pnpm install`, `pnpm --filter @typerace/server build`).
-         El primer build tarda 2–4 min.
-3. - [ ] Luego la fase **Pre-deploy** debe mostrar una línea JSON con
-         `"msg":"Migraciones y seed aplicados"`.
-4. - [ ] Luego **Healthcheck** en verde y el estado del despliegue en **Active / Success**.
-5. - [ ] En el navegador abre `https://<tu-dominio-railway>/health`. Debe responder:
+2. - [ ] Al arrancar, el log debe mostrar, en orden:
+
+   ```json
+   {"insertedTexts":25,"msg":"Migraciones y seed aplicados"}
+   {"msg":"Server listening at http://...:10000"}
+   ```
+
+   (en arranques posteriores verás `"insertedTexts":0`: es normal).
+
+3. - [ ] El estado del servicio pasa a **Live** (verde).
+4. - [ ] Copia la URL que aparece arriba, debajo del nombre del servicio (algo como
+         `https://typerace-server.onrender.com`; puede llevar un sufijo si el nombre ya
+         estaba tomado). Anótala en la tabla de **Datos**.
+5. - [ ] Ábrela en el navegador agregando `/health`. Debe responder:
 
    ```json
    { "status": "ok", "database": "ok" }
    ```
 
-6. - [ ] **Pásame la URL de Railway en el chat.** Con la CLI puedo revisar los logs y
-         probar el CORS desde aquí.
+6. - [ ] **Pásame la URL de Render en el chat** (la URL, **no** la cadena de Neon). Desde aquí
+         compruebo `/health` y el CORS.
 
 ---
 
@@ -184,8 +131,7 @@ Entra a <https://vercel.com> → equipo **santiagoartyrs' projects** → proyect
 - [ ] **Framework Preset / Build Command / Output Directory / Install Command:**
       sin _Override_ activado. Vercel los toma de `apps/web/vercel.json`.
   - Si alguno tiene el interruptor **Override** encendido, apágalo.
-- [ ] **Ignored Build Step:** en **Automatic** (o vacío). Si alguna vez pusiste `exit 0`
-      para pausar los deploys, quítalo.
+- [ ] **Ignored Build Step:** en **Automatic** (o vacío).
 - [ ] **Node.js Version:** `24.x` (ya está así).
 
 ### 3.2 Variable de entorno
@@ -193,26 +139,27 @@ Entra a <https://vercel.com> → equipo **santiagoartyrs' projects** → proyect
 **Settings → Environment Variables → Add New**:
 
 - [ ] **Key:** `VITE_API_URL`
-- [ ] **Value:** `https://<tu-dominio-railway>`, **sin barra final** y con `https://`.
-- [ ] **Environments:** marca **Production** y **Preview** (Development opcional).
-- [ ] **Sensitive:** déjalo desactivado (no es un secreto; termina visible en el JS del navegador).
+- [ ] **Value:** la URL de Render, p. ej. `https://typerace-server.onrender.com`
+      (**sin barra final**, con `https://`, sin `/health`).
+- [ ] **Environments:** marca **Production** y **Preview**.
+- [ ] **Sensitive:** desactivado (no es secreta; termina visible en el JS del navegador).
 - [ ] **Save**.
 
 ### 3.3 Redeploy
 
-- [ ] **Deployments** → el deploy más reciente (el que falló en la Parte 0) → menú `⋯` →
-      **Redeploy**.
-- [ ] Desmarca **Use existing Build Cache**. Así confirmamos que la corrección funciona
-      incluso sin caché.
-- [ ] Espera el estado **Ready** (≈1 min). En los logs debe verse primero
-      `packages/proto-gen build` y luego `apps/web build` con `✓ built`.
+- [ ] **Deployments** → elige el deploy **más reciente de `main`**. Comprueba que el commit
+      sea el de la Parte 0 o uno más nuevo.
+  - Ojo: si haces Redeploy de un deploy viejo, Vercel reconstruye **ese commit viejo**.
+- [ ] Menú `⋯` → **Redeploy** → desmarca **Use existing Build Cache** → **Redeploy**.
+- [ ] Espera el estado **Ready** (≈1 min). En el log debe verse `proto-gen build: Done` y
+      luego `✓ built`.
 
-### 3.4 Deployment Protection (importante)
+### 3.4 Deployment Protection
 
 El proyecto tiene activada la protección de Vercel (_Standard Protection_).
 
 - [ ] Abre `https://type-race-santiagoartyrs-projects.vercel.app` en una **ventana
-      privada / incógnito** (sin tu sesión de Vercel).
+      privada / incógnito**.
 - [ ] **Si carga la app:** perfecto, no toques nada.
 - [ ] **Si te pide iniciar sesión en Vercel:** nadie más podrá verla. Ve a
       **Settings → Deployment Protection → Vercel Authentication** y desactívala (o
@@ -222,69 +169,67 @@ El proyecto tiene activada la protección de Vercel (_Standard Protection_).
 
 ## Parte 4 — Prueba de punta a punta en producción
 
+> Si el backend llevaba más de 15 minutos sin uso, está dormido. Abre primero
+> `https://<tu-url-de-render>/health` y espera a que responda (~1 minuto).
+
 1. - [ ] Abre el dominio de Vercel. Debe cargar la página de inicio en español y el botón
          de modo claro/oscuro debe funcionar.
-2. - [ ] Abre las herramientas de desarrollador (**F12**) → pestaña **Console**. No debe haber
-         errores rojos de CORS.
+2. - [ ] **F12 → Console**: no debe haber errores rojos de CORS.
 3. - [ ] Escribe un apodo → **crear sala** → copia el enlace de invitación.
-4. - [ ] Abre el enlace en **otra pestaña** (o en el celular, usando datos móviles para
-         probar desde otra red) → únete con otro apodo.
-5. - [ ] Inicia la carrera y escribe el texto en ambas. El progreso del rival debe moverse
-         en tiempo real.
-6. - [ ] Al terminar, ve a **Ranking**: deben aparecer los resultados (se guardan en PostgreSQL).
-7. - [ ] **Prueba de resistencia:** deja una sala abierta 2–3 minutos sin hacer nada. No debe
-         desconectarse (el servidor manda un _heartbeat_ cada 15 s).
+4. - [ ] Ábrelo en **otra pestaña** (o en el celular con datos móviles) → únete con otro apodo.
+5. - [ ] Inicia la carrera y escribe en ambas. El progreso del rival debe moverse en tiempo real.
+6. - [ ] Al terminar, ve a **Ranking**: deben aparecer los resultados (guardados en Neon).
+7. - [ ] Deja una sala abierta 2–3 minutos sin hacer nada: no debe desconectarse.
 
 ---
 
-## Parte 5 — Opcional, pero recomendado
+## Parte 5 — Opcional
 
-- [ ] **Proteger `main` en GitHub:** repo → **Settings → Branches → Add branch ruleset**
-      (o _Add rule_) → rama `main` → **Require status checks to pass** → elige los dos jobs
-      del CI.
-- [ ] **Previews de Vercel con CORS:** si quieres que los _preview deployments_ hablen con el
-      backend, cambia en Railway:
+- [ ] **Previews de Vercel con CORS:** en Render → **typerace-server → Environment** → edita
+      `CORS_ORIGIN`:
 
   ```
-  CORS_ORIGIN=https://type-race-santiagoartyrs-projects.vercel.app,https://type-race-*-santiagoartyrs-projects.vercel.app
+  https://type-race-santiagoartyrs-projects.vercel.app,https://type-race-*-santiagoartyrs-projects.vercel.app
   ```
 
-  (El `*` cubre un segmento con letras, números y guiones.)
+  Para que el cambio sea permanente, cámbialo también en `render.yaml` y súbelo.
 
-- [ ] **Alerta de gasto en Railway:** **Workspace Settings → Usage** → define un límite
-      (_usage limit_) para no llevarte sorpresas.
+- [ ] **Proteger `main` en GitHub:** **Settings → Branches → Add branch ruleset** → rama
+      `main` → **Require status checks to pass** → elige los dos jobs del CI.
 
 ---
 
 ## Si algo falla
 
-| Síntoma                                                                      | Causa probable                                                  | Qué hacer                                                                                                                     |
-| ---------------------------------------------------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Railway: build falla con `Dockerfile not found` o usa Railpack               | No tomó la ruta del Dockerfile                                  | Revisa **Builder = Dockerfile** y **Dockerfile Path**, o define `RAILWAY_DOCKERFILE_PATH=apps/server/Dockerfile`.             |
-| Railway: build falla en `COPY proto proto` / no encuentra `packages`         | **Root Directory** no está vacío                                | Déjalo vacío (raíz del repo).                                                                                                 |
-| Railway: pre-deploy falla con `DATABASE_URL ... Obligatoria`                 | Falta la variable o la referencia está mal escrita              | Debe ser `${{Postgres.DATABASE_URL}}` y el servicio de base de datos debe llamarse `Postgres`.                                |
-| Railway: pre-deploy falla con `ECONNREFUSED` / `getaddrinfo`                 | La base de datos no estaba lista o está en otro proyecto        | Comprueba que Postgres esté en verde **dentro del mismo proyecto** y redespliega (`⋯ → Redeploy`).                            |
-| Railway: el servidor se cae al arrancar con `Variables de entorno inválidas` | Falta `CORS_ORIGIN` o `DATABASE_URL`, o un valor está mal       | El log dice exactamente qué variable falla. Corrígela y guarda.                                                               |
-| Railway: healthcheck falla (timeout)                                         | Se definió `PORT` a mano o el dominio apunta a otro puerto      | Borra la variable `PORT` si la creaste; en **Networking** el dominio debe apuntar a `8080`.                                   |
-| `/health` responde `503` con `"database":"error"`                            | El servidor no llega a Postgres                                 | Revisa `DATABASE_URL` y que Postgres esté activo.                                                                             |
-| Vercel: `Falta VITE_API_URL`                                                 | La variable no existe para ese entorno                          | Defínela para **Production** y **Preview** y haz **Redeploy**.                                                                |
-| Vercel: `Cannot find module '@typerace/proto-gen'`                           | No se subió la corrección o hay un _Override_ del Build Command | Confirma que el commit de la Parte 0 está en `main` y apaga el **Override** del Build Command.                                |
-| Navegador: error de **CORS** en la consola                                   | `CORS_ORIGIN` no coincide con el dominio exacto                 | Debe ser idéntico al de la barra de direcciones: con `https://`, sin barra final. Guarda en Railway y espera el redespliegue. |
-| Navegador: `Failed to fetch` / `ERR_NAME_NOT_RESOLVED`                       | `VITE_API_URL` mal escrita                                      | Corrígela en Vercel y haz **Redeploy** (cambiar la variable sola no basta).                                                   |
-| Navegador: _mixed content_                                                   | `VITE_API_URL` empieza con `http://`                            | Usa `https://`.                                                                                                               |
-| Las salas se cierran solas tras un push                                      | Es normal: un redespliegue reinicia el proceso                  | Los clientes reconectan y ofrecen volver a unirse. Evita desplegar en medio de una demo.                                      |
+| Síntoma                                                   | Causa probable                                              | Qué hacer                                                                                      |
+| --------------------------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Render: el Blueprint no encuentra `render.yaml`           | El commit de la Parte 0 no está en `main`                   | `git log origin/main --oneline -3` debe mostrarlo; si no, haz el push.                         |
+| Render: build falla en `COPY proto proto`                 | Se cambió el contexto de Docker                             | En `render.yaml` debe ser `dockerContext: .` (raíz del repo).                                  |
+| Render: `Variables de entorno inválidas ... DATABASE_URL` | Falta la variable o no empieza por `postgres`               | **Environment** → revisa `DATABASE_URL` (debe empezar con `postgresql://`).                    |
+| Render: `password authentication failed`                  | Contraseña mal copiada                                      | En Neon → **Connect** → **Show password** → copia de nuevo.                                    |
+| Render: `Fallo al migrar` con `ECONNREFUSED`/`timeout`    | Cadena _pooled_ o host mal copiado                          | Usa la cadena **sin** `-pooler` en el host.                                                    |
+| Render: health check falla y no llega a **Live**          | El servidor no arrancó                                      | Mira el log de arranque: la primera línea de error dice qué falta.                             |
+| `/health` responde `503` con `"database":"error"`         | El servidor no llega a Neon                                 | Revisa `DATABASE_URL`; en Neon comprueba que el proyecto no esté suspendido por límite de uso. |
+| La URL de Render tarda ~1 min en responder                | El plan gratuito durmió el servicio                         | Normal tras 15 min sin tráfico. Espera y recarga.                                              |
+| Vercel: `Falta VITE_API_URL`                              | La variable no existe para ese entorno                      | Defínela para **Production** y **Preview** y haz **Redeploy**.                                 |
+| Vercel: `Cannot find module '@typerace/proto-gen'`        | Redeploy de un commit viejo, o _Override_ del Build Command | Redeploy desde el deploy más reciente de `main` y apaga el **Override**.                       |
+| Navegador: error de **CORS** en la consola                | `CORS_ORIGIN` no coincide con el dominio exacto             | Debe ser idéntico al de la barra de direcciones, con `https://` y sin barra final.             |
+| Navegador: `Failed to fetch`                              | Backend dormido o `VITE_API_URL` mal escrita                | Abre `/health` de Render; si responde, corrige `VITE_API_URL` y haz **Redeploy**.              |
+| Pantalla solo con el fondo de color                       | El frontend se construyó sin `VITE_API_URL`                 | **F12 → Console** lo confirma. Define la variable y haz **Redeploy**.                          |
+| Las salas desaparecen                                     | Redespliegue o el servicio se durmió                        | Es normal: el estado de las salas vive en memoria.                                             |
 
 **Dónde mirar:**
 
-- Logs del backend: Railway → `server` → **Deployments** → despliegue → **Deploy Logs**
-  (JSON estructurado; cada RPC rechazada incluye `rpc` y `code`).
-- Logs del frontend: Vercel → **Deployments** → deploy → **Build Logs**.
-- Errores del navegador: **F12 → Console** y **Network** (filtra por `typerace.v1`).
+- Backend: Render → **typerace-server → Logs** (JSON estructurado; cada RPC rechazada incluye
+  `rpc` y `code`).
+- Base de datos: Neon → **Monitoring** y **Tables** (deben existir las tablas y 25 textos).
+- Frontend: Vercel → **Deployments** → deploy → **Build Logs**.
+- Navegador: **F12 → Console** y **Network** (filtra por `typerace.v1`).
 
 ---
 
 ## Al terminar, envíame
 
-1. La URL de Railway.
+1. La URL de Render (nunca la cadena de Neon).
 2. Confirmación de que `/health` responde `ok`.
 3. Si la prueba de la Parte 4 funcionó (o el error exacto si no).

@@ -48,5 +48,7 @@ COPY --from=build --chown=node:node /out/drizzle ./drizzle
 
 USER node
 EXPOSE 8080
-# Las migraciones se ejecutan aparte (pre-deploy): `node dist/scripts/migrate.js`
-CMD ["node", "dist/main.js"]
+# Migra (idempotente) y luego arranca. Se hace al iniciar porque el plan gratis
+# de Render no tiene pre-deploy command; `exec` deja a Node como PID 1 para que
+# reciba SIGTERM y cierre ordenadamente.
+CMD ["sh", "-c", "node dist/scripts/migrate.js && exec node dist/main.js"]

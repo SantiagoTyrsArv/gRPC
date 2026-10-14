@@ -12,9 +12,20 @@ export interface DatabaseConnection {
   close: () => Promise<void>;
 }
 
+/**
+ * Neon incluye `channel_binding=require` en su cadena de conexión; `postgres`
+ * no lo reconoce y lo envía como parámetro de sesión, que Postgres rechaza.
+ */
+export function normalizeDatabaseUrl(url: string): string {
+  const parsed = new URL(url);
+  if (!parsed.searchParams.has('channel_binding')) return url;
+  parsed.searchParams.delete('channel_binding');
+  return parsed.toString();
+}
+
 /** `maxConnections: 1` es obligatorio para migrar (el advisory lock es por conexión). */
 export function createDatabase(url: string, { maxConnections = 10 } = {}): DatabaseConnection {
-  const client = postgres(url, {
+  const client = postgres(normalizeDatabaseUrl(url), {
     max: maxConnections,
     idle_timeout: 30,
     connect_timeout: 10,
